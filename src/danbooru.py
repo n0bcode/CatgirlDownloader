@@ -81,6 +81,13 @@ class DanbooruDownloaderAPI(BaseDownloaderAPI):
                 r = requests.get(
                     f"{self.endpoint}/posts.json", params=params, timeout=10
                 )
+                if r.status_code == 422:
+                    tags_list = tags.split() if tags else []
+                    if len(tags_list) > 1:
+                        params["tags"] = tags_list[0]
+                        r = requests.get(
+                            f"{self.endpoint}/posts.json", params=params, timeout=10
+                        )
                 if r.status_code != 200:
                     return None
             except Exception as e:
