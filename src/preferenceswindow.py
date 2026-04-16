@@ -32,20 +32,20 @@ def show_conflict_warning(parent, conflicting_tags):
     dialog.present()
 
 
-def check_all_sources_for_conflict(settings):
-    from .danbooru import DanbooruDownloaderAPI
-
+def check_all_sources_for_conflict(settings, source_api):
     settings.reload_preferences()
 
-    all_conflicts = []
+    if not source_api:
+        return []
 
-    danbooru = DanbooruDownloaderAPI(settings=settings)
-    danbooru.reload_settings()
-    conflicts = danbooru.check_search_blacklist_conflict()
-    if conflicts:
-        all_conflicts.extend([f"Danbooru: {', '.join(conflicts)}"])
+    source_id = source_api.get_source_id()
+    if source_id == "danbooru":
+        search_tags = settings.get_preference("danbooru_tags") or ""
+        conflicts = source_api.check_search_blacklist_conflict(search_tags)
+        if conflicts:
+            return [f"Danbooru: {', '.join(conflicts)}"]
 
-    return all_conflicts
+    return []
 
 
 @Gtk.Template(
@@ -112,7 +112,17 @@ class PreferencesWindow(Adw.PreferencesWindow):
         tags = entry.get_text()
         self.settings.set_preference("blacklist_tags", tags)
 
-        conflicts = check_all_sources_for_conflict(self.settings)
+        if self.window and hasattr(self.window, "downloaders"):
+            active_api = None
+            if hasattr(self.window, "source_selector"):
+                item = self.window.source_selector.get_selected_item()
+                if item:
+                    source_id = item.id
+                    active_api = self.window.downloaders.get(source_id)
+        else:
+            active_api = None
+
+        conflicts = check_all_sources_for_conflict(self.settings, active_api)
         if conflicts:
             show_conflict_warning(
                 self, [c.split(": ", 1)[1] for c in conflicts if ": " in c]

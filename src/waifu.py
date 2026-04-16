@@ -11,6 +11,7 @@ class WaifuDownloaderAPI(BaseDownloaderAPI):
         super().__init__()
         self.endpoint = "https://api.waifu.im/images"
         self._settings = settings
+        self._source_id = "waifu"
         self.blacklist_tags = (
             settings.get_preference("blacklist_tags") if settings else ""
         )

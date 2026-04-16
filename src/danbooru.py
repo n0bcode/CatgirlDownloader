@@ -17,6 +17,7 @@ class DanbooruDownloaderAPI(BaseDownloaderAPI):
         super().__init__()
         self.endpoint = "https://danbooru.donmai.us"
         self._settings = settings
+        self._source_id = "danbooru"
         self._load_tags()
         self._settings_window = None
 
@@ -37,10 +38,17 @@ class DanbooruDownloaderAPI(BaseDownloaderAPI):
     def reload_settings(self) -> None:
         self._load_tags()
 
-    def check_search_blacklist_conflict(self) -> list:
-        search_tags = set(self.tags.strip().lower().split()) if self.tags else set()
+    def check_search_blacklist_conflict(self, search_tags: str = "") -> list:
+        if not search_tags:
+            search_tags = self.tags
+        return self._check_conflict(search_tags)
+
+    def _check_conflict(self, search_tags: str) -> list:
+        search_tags_set = (
+            set(search_tags.strip().lower().split()) if search_tags else set()
+        )
         blacklist_tags = set(self._parse_blacklist())
-        return list(search_tags & blacklist_tags)
+        return list(search_tags_set & blacklist_tags)
 
     def _build_tags_query(self, nsfw_mode: NSFWOption) -> str:
         tags = self.tags.strip() if self.tags else ""

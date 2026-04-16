@@ -11,6 +11,7 @@ class CatgirlDownloaderAPI(BaseDownloaderAPI):
         super().__init__()
         self.endpoint = "https://nekos.moe/api/v1/random/image"
         self._settings = settings
+        self._source_id = "catgirl"
         self.blacklist_tags = (
             settings.get_preference("blacklist_tags") if settings else ""
         )

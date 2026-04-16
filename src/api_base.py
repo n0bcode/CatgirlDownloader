@@ -10,6 +10,7 @@ class BaseDownloaderAPI(ABC):
         self.info: Optional[dict[str, Any]] = None
         self._settings = None
         self.blacklist_tags: str = ""
+        self._source_id: str = ""
 
     @abstractmethod
     def get_image_url(
@@ -28,6 +29,9 @@ class BaseDownloaderAPI(ABC):
     def get_blacklist_tags(self) -> str:
         return self.blacklist_tags
 
+    def get_source_id(self) -> str:
+        return self._source_id
+
     def _parse_blacklist(self) -> List[str]:
         if not self.blacklist_tags:
             return []
@@ -39,6 +43,12 @@ class BaseDownloaderAPI(ABC):
             return []
         tags_lower = [t.lower() for t in tags]
         return [tag for tag in blacklist if tag in tags_lower]
+
+    def check_search_blacklist_conflict(self, search_tags: str = "") -> List[str]:
+        return self._check_conflict(search_tags)
+
+    def _check_conflict(self, search_tags: str) -> List[str]:
+        return []
 
     def get_image(self, url: str) -> Optional[bytes]:
         try:
